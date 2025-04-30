@@ -75,86 +75,91 @@ class Settings {
 	public var v : AppSettings;
 	var ls : dn.data.LocalStorage;
 
-	public function new() {
-		// Init storage
-		ls = dn.data.LocalStorage.getJsonStorage("settings", Compact);
-		ls.setStorageFileDir( getDir() );
+	// new with optional settings
+	public function new(?in_settings:AppSettings) {
+		if (in_settings != null) {
+			v = in_settings;
+			return;
+		} else {
+			// Init storage
+			ls = dn.data.LocalStorage.getJsonStorage("settings", Compact);
+			ls.setStorageFileDir( getDir() );
 
-		// Init defaults
-		defaults = {
-			lastKnownVersion: null,
-			recentProjects: [],
-			recentDirs: null,
-			recentDirColors: [],
+			// Init defaults
+			defaults = {
+				lastKnownVersion: null,
+				recentProjects: [],
+				recentDirs: null,
+				recentDirColors: [],
 
-			zenMode: false,
-			grid: true,
+				zenMode: false,
+				grid: true,
 
-			emptySpaceSelection: true,
-			tileStacking: true,
-			tileEnumOverlays : false,
-			showDetails: true,
-			useBestGPU: true,
-			startFullScreen: false,
-			autoInstallUpdates: true,
-			colorBlind: false,
-			blurMask: true,
-			navigationKeys: null,
+				emptySpaceSelection: true,
+				tileStacking: true,
+				tileEnumOverlays : false,
+				showDetails: true,
+				useBestGPU: true,
+				startFullScreen: false,
+				autoInstallUpdates: true,
+				colorBlind: false,
+				blurMask: true,
+				navigationKeys: null,
 
-			singleLayerMode: false,
-			singleLayerModeIntensity: 0.75,
+				singleLayerMode: false,
+				singleLayerModeIntensity: 0.75,
 
-			openLastProject: false,
-			lastProject: null,
+				openLastProject: false,
+				lastProject: null,
 
-			autoWorldModeSwitch: ZoomInAndOut,
-			fieldsRender: FR_Outline,
-			nearbyTilesRenderingDist: 1,
-			appUiScale: 1.0,
-			editorUiScale: 1.0,
-			mouseWheelSpeed: 1.0,
+				autoWorldModeSwitch: ZoomInAndOut,
+				fieldsRender: FR_Outline,
+				nearbyTilesRenderingDist: 1,
+				appUiScale: 1.0,
+				editorUiScale: 1.0,
+				mouseWheelSpeed: 1.0,
 
-			uiStates: [],
-			lastUiDirs: [],
-			projectTrusts: [],
-		}
+				uiStates: [],
+				lastUiDirs: [],
+				projectTrusts: [],
+			}
 
-		// Load
-		v = ls.readObject(defaults, (obj)->{
+			// Load
+			v = ls.readObject(defaults, (obj)->{
+				#if editor
+				// Migrate old NavKeys string value
+				if( obj.navKeys!=null ) {
+					var e = try NavigationKeys.createByName( obj.navKeys ) catch(_) null;
+					if( e!=null )
+						obj.navigationKeys = e;
+				}
+				#end
+			});
+
+			// Try to guess Navigation keys
 			#if editor
-			// Migrate old NavKeys string value
-			if( obj.navKeys!=null ) {
-				var e = try NavigationKeys.createByName( obj.navKeys ) catch(_) null;
-				if( e!=null )
-					obj.navigationKeys = e;
+
+			if( v.navigationKeys==null ) {
+				for(full in js.Browser.navigator.languages) {
+					switch full {
+						case "nl-be": v.navigationKeys = Zqsd; break;
+					}
+
+					var short = ( full.indexOf("-")<0 ? full : full.substr(0,full.indexOf("-")) ).toLowerCase();
+					switch short {
+						case "fr": v.navigationKeys = Zqsd; break;
+						case "en": v.navigationKeys = Wasd; break;
+						case _:
+					}
+				}
+				if( v.navigationKeys==null )
+					v.navigationKeys = Wasd;
 			}
 			#end
-		});
-
-		// Try to guess Navigation keys
-		#if editor
-
-		if( v.navigationKeys==null ) {
-			for(full in js.Browser.navigator.languages) {
-				switch full {
-					case "nl-be": v.navigationKeys = Zqsd; break;
-				}
-
-				var short = ( full.indexOf("-")<0 ? full : full.substr(0,full.indexOf("-")) ).toLowerCase();
-				switch short {
-					case "fr": v.navigationKeys = Zqsd; break;
-					case "en": v.navigationKeys = Wasd; break;
-					case _:
-				}
-			}
-			if( v.navigationKeys==null )
-				v.navigationKeys = Wasd;
 		}
-		#end
 
 		initDefaultGlobalUiState(ShowProjectColors, 1);
 	}
-
 
 	public function setProjectTrust(projectIid:String, trust:Bool) {
 		clearProjectTrust(projectIid);

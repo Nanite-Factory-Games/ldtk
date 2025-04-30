@@ -1,16 +1,25 @@
+import Settings.AppSettings;
 import electron.main.App;
 import electron.main.IpcMain;
 import js.Node.__dirname;
 import js.Node.process;
+import js.Syntax;
 
+
+@:expose("ElectronMain")
 class ElectronMain {
+
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep + 'assets' + require('path').sep");
+
 	static var mainWindow : electron.main.BrowserWindow;
 
 	static var settings : Settings;
 
-	static function main() {
-		settings = new Settings();
+	// contructor
+	public function new() { }
 
+	public function main(?in_settings: AppSettings) {
+		settings = new Settings(in_settings);
 		// Force best available GPU usage
 		if( settings.v.useBestGPU && !App.commandLine.hasSwitch("force_low_power_gpu") )
 			App.commandLine.appendSwitch("force_high_performance_gpu");
@@ -28,6 +37,11 @@ class ElectronMain {
 		});
 
 		initIpcBindings();
+	}
+
+	public function quit() {
+		mainWindow.close();
+		App.quit();
 	}
 
 
@@ -77,7 +91,7 @@ class ElectronMain {
 			var ver = new dn.Version( MacroTools.getAppVersion() );
 
 			splash
-				.loadFile('assets/splash.html', { query:{
+				.loadFile(APP_RESOURCE_DIR + 'splash.html', { query:{
 					mainVersion : ver.major+"."+ver.minor,
 					patchVersion : ver.patch>0 ? "."+ver.patch : "",
 				}})
@@ -97,7 +111,7 @@ class ElectronMain {
 			fullscreenable: true,
 			show: false,
 			title: "LDtk",
-			icon: __dirname+"/appIcon.png",
+			// icon: __dirname+"/appIcon.png",
 			backgroundColor: '#1e2229'
 		});
 		mainWindow.once("ready-to-show", ev->{
@@ -117,20 +131,21 @@ class ElectronMain {
 		#end
 
 		// Load app page
-		var p = mainWindow.loadFile('assets/app.html');
+		var p = mainWindow.loadFile(APP_RESOURCE_DIR + 'app.html', {});
 		#if debug
 			// Show immediately
 			mainWindow.maximize();
-			p.then( (_)->{}, (_)->fileNotFound("app.html") );
+			p.then( (_)->{}, (_)->fileNotFound(APP_RESOURCE_DIR + "app.html") );
 		#else
 			// Wait for loading before showing up
 			p.then( (_)->{
 				mainWindow.show();
 				mainWindow.maximize();
 				splash.destroy();
-			}, (_)->{
+			}, (e)->{
+				electron.main.Dialog.showErrorBox("error:", '"$e"');
 				splash.destroy();
-				fileNotFound("app.html");
+				fileNotFound(APP_RESOURCE_DIR + "app.html");
 			});
 		#end
 

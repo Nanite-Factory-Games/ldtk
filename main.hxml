@@ -4,7 +4,10 @@
 
 -lib deepnightLibs
 -lib electron
+-lib hxtsdgen
 
--main ElectronMain
--dce full
+-dce no
+
 -js app/assets/main.js
+
+ElectronMain

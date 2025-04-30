@@ -1,4 +1,6 @@
 import electron.renderer.IpcRenderer;
+import js.Syntax;
+
 #if debug
 import page.CrashReport; // force compilation in debug
 #end
@@ -6,9 +8,11 @@ import page.CrashReport; // force compilation in debug
 class App extends dn.Process {
 	public static var ME : App;
 	public static var LOG : dn.Log = new dn.Log(5000);
-	public static var APP_RESOURCE_DIR = "./"; // with trailing slash
+
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep");
+	
 	public static var APP_ASSETS_DIR(get,never) : String;
-		static inline function get_APP_ASSETS_DIR() return APP_RESOURCE_DIR+"assets/";
+	static inline function get_APP_ASSETS_DIR() return APP_RESOURCE_DIR;
 
 	public var jDoc(get,never) : J; inline function get_jDoc() return new J(js.Browser.document);
 	public var jBody(get,never) : J; inline function get_jBody() return new J("body");
@@ -35,7 +39,7 @@ class App extends dn.Process {
 	public var keyBindings : Array<KeyBinding> = [];
 	var debugFlags : Map<DebugFlag,Bool> = new Map();
 
-	public function new() {
+	public function new(?project_path:String) {
 		super();
 
 		// Init logging
@@ -145,7 +149,7 @@ class App extends dn.Process {
 		// Start
 		delayer.addS( ()->{
 			// Look for path and level index in args
-			var path = getArgPath();
+			var path = dn.FilePath.fromFile( args.getAllSoloValues().join(" ") );
 			if( path!=null && !path.isEmpty() && !path.isAbsolute() ) {
 				path = dn.FilePath.fromFile(Sys.getCwd() + path.slash() + path.full);
 				LOG.add("BOOT", "Fixed path argument: "+path.full);
