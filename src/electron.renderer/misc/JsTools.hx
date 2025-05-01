@@ -3,6 +3,7 @@ package misc;
 import sortablejs.*;
 import sortablejs.Sortable;
 import js.node.Fs;
+import js.Syntax;
 
 typedef InternalSortableOptions = {
 	var ?onlyDraggables: Bool;
@@ -10,6 +11,8 @@ typedef InternalSortableOptions = {
 }
 
 class JsTools {
+
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require.resolve('ldtk/package.json')) + require('path').sep + 'assets' + require('path').sep");
 
 	/**
 		Use SortableJS to make some list sortable
@@ -517,8 +520,8 @@ class JsTools {
 		if( !useCache || !_fileCache.exists(name) ) {
 			if( _fileCache.exists(name) )
 				_fileCache.remove(name);
-			App.LOG.fileOp("Loading HTML template "+name);
-			var path = dn.FilePath.fromFile(App.APP_ASSETS_DIR + "tpl/" + name);
+			App.LOG.fileOp("Loading HTML template "+name+"from "+APP_RESOURCE_DIR);
+			var path = dn.FilePath.fromFile(APP_RESOURCE_DIR + "tpl/" + name);
 			path.extension = "html";
 
 			if( !NT.fileExists(path.full) )
