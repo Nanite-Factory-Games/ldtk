@@ -89,7 +89,7 @@ class ElectronMain {
 				height: 300,
 				alwaysOnTop: true,
 				transparent: true,
-				frame: false,
+				modal: true,
 			});
 
 			var ver = new dn.Version( MacroTools.getAppVersion() );
@@ -116,7 +116,6 @@ class ElectronMain {
 			show: false,
 			title: "LDtk",
 			// icon: __dirname+"/appIcon.png",
-			backgroundColor: '#1e2229'
 		});
 		mainWindow.once("ready-to-show", ev->{
 			mainWindow.webContents.setZoomFactor( settings.getAppZoomFactor() );
