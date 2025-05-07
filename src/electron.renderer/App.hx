@@ -704,7 +704,7 @@ class App extends dn.Process {
 
 		
 		// Load
-		settings = new Settings(IpcRenderer.sendSync("getSettings"));
+		settings = new Settings(null);
 		if( settings.v.lastKnownVersion==null )
 			LOG.warning("  -> New settings");
 

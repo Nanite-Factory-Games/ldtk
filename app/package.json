@@ -1,6 +1,6 @@
 {
 	"name": "@nanite-factory-games/ldtk",
-	"version": "1.5.8",
+	"version": "1.5.9",
 	"main": "assets/main.js",
 	"productName": "LDtk",
 	"author": "Sebastien Benard",
