@@ -12,7 +12,7 @@ typedef InternalSortableOptions = {
 
 class JsTools {
 
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require.resolve('ldtk/package.json')) + require('path').sep + 'assets' + require('path').sep");
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require.resolve('@nanite-factory-games/ldtk/package.json')) + require('path').sep + 'assets' + require('path').sep");
 
 	/**
 		Use SortableJS to make some list sortable

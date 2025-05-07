@@ -51,10 +51,8 @@ class ElectronMain {
 		IpcMain.handle("appReady", function(ev) {
 			// Window close button
 			mainWindow.on('close', function(ev) {
-				if( !dn.js.ElectronUpdater.isIntalling ) {
-					ev.preventDefault();
-					mainWindow.webContents.send("onWinClose");
-				}
+				ev.preventDefault();
+				mainWindow.webContents.send("onWinClose");
 			});
 			// Window move
 			mainWindow.on('move', function(ev) {
@@ -159,7 +157,6 @@ class ElectronMain {
 
 		// Misc bindings
 		dn.js.ElectronDialogs.initMain(mainWindow);
-		dn.js.ElectronUpdater.initMain(mainWindow);
 	}
 
 

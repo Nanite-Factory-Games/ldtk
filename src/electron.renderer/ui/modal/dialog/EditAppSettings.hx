@@ -18,18 +18,7 @@ class EditAppSettings extends ui.modal.Dialog {
 		jForm.off().find("*").off();
 
 		// Update available
-		if( App.ME.pendingUpdate==null )
-			jContent.find(".update").hide();
-		else {
-			jContent.find(".update").click(_->{
-				if( App.ME.pendingUpdate.github ) {
-					App.ME.checkForUpdate();
-				}
-				else
-					electron.Shell.openExternal(Const.DOWNLOAD_URL);
-				close();
-			});
-		}
+		jContent.find(".update").hide();
 
 		// Log button
 		jContent.find(".logPath").text( JsTools.getLogPath() );
