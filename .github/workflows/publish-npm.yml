@@ -20,8 +20,8 @@ jobs:
       - run: haxe setup.hxml
 
       # Compile with haxe
-      - run: haxe main.hxml
-      - run: haxe renderer.hxml
+      - run: haxe main.debug.hxml
+      - run: haxe renderer.debug.hxml
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
