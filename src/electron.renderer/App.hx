@@ -144,15 +144,18 @@ class App extends dn.Process {
 		LOG.add("BOOT","AppZoomFactor: "+settings.getAppZoomFactor());
 
 		// Auto updater
-		initAutoUpdater();
+		// initAutoUpdater();
 
 		// Start
 		delayer.addS( ()->{
+			var path = null;
 			// Look for path and level index in args
-			var path = dn.FilePath.fromFile( args.getAllSoloValues().join(" ") );
-			if( path!=null && !path.isEmpty() && !path.isAbsolute() ) {
-				path = dn.FilePath.fromFile(Sys.getCwd() + path.slash() + path.full);
-				LOG.add("BOOT", "Fixed path argument: "+path.full);
+			if (project_path!=null) {
+				path = dn.FilePath.fromFile(project_path);
+				if( path!=null && !path.isEmpty() && !path.isAbsolute() ) {
+					path = dn.FilePath.fromFile(Sys.getCwd() + path.slash() + path.full);
+					LOG.add("BOOT", "Fixed path argument: "+path.full);
+				}
 			}
 
 			var levelIndex : Null<Int> = null;
@@ -795,8 +798,9 @@ class App extends dn.Process {
 	function loadSettings() {
 		LOG.fileOp("Loading settings from "+Settings.getDir()+"...");
 
+		
 		// Load
-		settings = new Settings();
+		settings = new Settings(IpcRenderer.sendSync("getSettings"));
 		if( settings.v.lastKnownVersion==null )
 			LOG.warning("  -> New settings");
 

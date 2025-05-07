@@ -62,6 +62,10 @@ class ElectronMain {
 			});
 		});
 
+		IpcMain.handle("getSettings", function(ev) {
+			ev.returnValue = settings;
+		});
+
 
 		// *** sendSync/on *****************************************************
 	}

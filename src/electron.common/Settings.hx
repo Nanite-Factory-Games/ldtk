@@ -1,4 +1,5 @@
 import electron.renderer.IpcRenderer;
+import js.Syntax;
 #if editor
 import EditorTypes;
 #end
@@ -74,6 +75,9 @@ class Settings {
 	var defaults : AppSettings;
 	public var v : AppSettings;
 	var ls : dn.data.LocalStorage;
+
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep");
+
 
 	// new with optional settings
 	public function new(?in_settings:AppSettings) {
@@ -335,7 +339,7 @@ class Settings {
 
 	public static function getDir() {
 		var path = isRenderer()
-			?	#if debug	dn.js.ElectronTools.getAppResourceDir()
+			?	#if debug	APP_RESOURCE_DIR
 				#else		dn.js.ElectronTools.getUserDataDir() #end
 			:	#if debug	electron.main.App.getAppPath();
 				#else		electron.main.App.getPath("userData"); #end
