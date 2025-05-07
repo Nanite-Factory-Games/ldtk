@@ -16,31 +16,10 @@ jobs:
           haxe-version: 4.3.3
       - run: haxe -version
 
-      # Install libs
-      - run: haxelib install uuid
-      - run: haxelib git castle https://github.com/ncannasse/castle
-      - run: haxelib git heaps https://github.com/deepnight/heaps.git
-      - run: haxelib git hxnodejs https://github.com/HaxeFoundation/hxnodejs.git
-      - run: haxelib git electron https://github.com/tong/hxelectron.git
-      - run: haxelib git heaps-aseprite https://github.com/AustinEast/heaps-aseprite.git
-
-      # Install haxe API from same branch (if it exists)...
-      - name: Install Haxe API from same branch
-        id: installApiBranch
-        run: haxelib git ldtk-haxe-api https://github.com/deepnight/ldtk-haxe-api.git ${{ steps.branch.outputs.v }} --always
-        continue-on-error: true
-      # ... or from master otherwise
-      - name: Install Haxe API from master
-        if: steps.installApiBranch.outcome == 'failure'
-        run: |
-          haxelib remove ldtk-haxe-api
-          haxelib git ldtk-haxe-api https://github.com/deepnight/ldtk-haxe-api.git --always
-
-      # Install deepnightLibs
-      - run: haxelib git deepnightLibs https://github.com/deepnight/deepnightLibs.git --always
-      - run: haxelib list
-      # Compile with haxe
+      # Install haxe libs
       - run: haxe setup.hxml
+
+      # Compile with haxe
       - run: haxe main.hxml
       - run: haxe renderer.hxml
       - uses: actions/setup-node@v4

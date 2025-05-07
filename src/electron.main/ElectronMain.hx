@@ -89,7 +89,7 @@ class ElectronMain {
 				height: 300,
 				alwaysOnTop: true,
 				transparent: true,
-				modal: true,
+				frame: false,
 			});
 
 			var ver = new dn.Version( MacroTools.getAppVersion() );
