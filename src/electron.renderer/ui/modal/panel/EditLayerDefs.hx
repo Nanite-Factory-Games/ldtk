@@ -546,7 +546,7 @@ class EditLayerDefs extends ui.modal.Panel {
 
 				// Add intGrid value button
 				jIntGridValuesWrapper.find(".addValue").off().click( _->{
-					var col = Const.suggestNiceColor( cur.getAllIntGridValues().map(iv->iv.color) );
+					var col = Const.suggestNiceColor( cur.getAllIntGridValues().map(iv->iv.color), App.ME.settings.v.colorBlind );
 					var iv = cur.addIntGridValue(col);
 					editor.ge.emit( LayerDefIntGridValueAdded(cur.uid,iv) );
 				});
@@ -571,7 +571,7 @@ class EditLayerDefs extends ui.modal.Panel {
 
 					var jAdd = jGroupWrapper.find(".addGroupValue");
 					jAdd.click(_->{
-						var col = Const.suggestNiceColor( cur.getAllIntGridValues().map(iv->iv.color) );
+						var col = Const.suggestNiceColor( cur.getAllIntGridValues().map(iv->iv.color), App.ME.settings.v.colorBlind);
 						var iv = cur.addIntGridValue(col);
 						var v = cur.getIntGridValueDef(iv);
 						v.groupUid = g.groupUid;

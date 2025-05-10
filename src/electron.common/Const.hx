@@ -1,6 +1,10 @@
+import js.Syntax;
+
 class Const {
 #if !macro
 	static var RAW_APP_VERSION : String = MacroTools.getAppVersion();
+	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require.resolve('@nanite-factory-games/ldtk/package.json')) + require('path').sep + 'assets' + require('path').sep");
+
 
 	public static function getAppVersionStr(short=false) : String {
 		if( short )
@@ -155,11 +159,11 @@ class Const {
 		0xffdf4d,
 	];
 
-	public static inline function getNicePalette() {
-		return App.ME.settings.v.colorBlind ? NICE_PALETTE_COLORBLIND : NICE_PALETTE;
+	public static inline function getNicePalette(colorBlind=false) {
+		return colorBlind ? NICE_PALETTE_COLORBLIND : NICE_PALETTE;
 	}
 
-	public static function suggestNiceColor(useds:Array<dn.Col>) : dn.Col {
+	public static function suggestNiceColor(useds:Array<dn.Col>, colorBlind=false) : dn.Col {
 		var useCounts = new Map();
 		inline function _incUseCount(c:dn.Col) {
 			if( useCounts.exists(c) )
@@ -174,12 +178,12 @@ class Const {
 
 		// Consider nice colors similar to used ones as being "used" as well
 		for(used in useds)
-		for(nice in getNicePalette())
+		for(nice in getNicePalette(colorBlind))
 			if( nice.getDistanceRgb(used)<0.1 )
 				_incUseCount(nice);
 
 		// Lookup unused nice colors
-		for(c in getNicePalette())
+		for(c in getNicePalette(colorBlind))
 			if( !useCounts.exists(c) )
 				return c;
 

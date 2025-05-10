@@ -9,20 +9,24 @@ import js.Syntax;
 @:expose("ElectronMain")
 class ElectronMain {
 
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep + 'assets' + require('path').sep");
-
 	static var mainWindow : electron.main.BrowserWindow;
 
 	static var settings : Settings;
 
+	var getSettingsHandler : Null<haxe.Constraints.Function> = null;
+	var eventsSender : Null<haxe.Constraints.Function> = null;
+
 	// contructor
 	public function new() { }
 
-	public function main(?in_settings: AppSettings) {
+	public function main(in_settings: AppSettings, events: Null<haxe.Constraints.Function>) {
 		settings = new Settings(in_settings);
+		eventsSender = events;
 		// Force best available GPU usage
 		if( settings.v.useBestGPU && !App.commandLine.hasSwitch("force_low_power_gpu") )
 			App.commandLine.appendSwitch("force_high_performance_gpu");
+
+		initIpcBindings(in_settings);
 
 		App.whenReady().then( (_)->showSplashWindow() );
 
@@ -35,17 +39,19 @@ class ElectronMain {
 			if( electron.main.BrowserWindow.getAllWindows().length == 0 )
 				showSplashWindow();
 		});
-
-		initIpcBindings();
 	}
 
 	public function quit() {
+		removeIpcBindings();
 		mainWindow.close();
-		App.quit();
 	}
 
+	function removeIpcBindings() {
+		IpcMain.removeHandler("appReady");
+		IpcMain.removeListener("getSettings", getSettingsHandler);
+	}
 
-	static function initIpcBindings() {
+	function initIpcBindings(in_settings: AppSettings) {
 		// *** invoke/handle *****************************************************
 
 		IpcMain.handle("appReady", function(ev) {
@@ -59,10 +65,10 @@ class ElectronMain {
 				mainWindow.webContents.send("onWinMove");
 			});
 		});
-
-		IpcMain.handle("getSettings", function(ev) {
-			ev.returnValue = settings;
-		});
+		getSettingsHandler = function(ev) {
+			ev.returnValue = in_settings;
+		};
+		IpcMain.on("getSettings", getSettingsHandler);
 
 
 		// *** sendSync/on *****************************************************
@@ -73,47 +79,19 @@ class ElectronMain {
 		App.quit();
 	}
 
-
 	static var splash : electron.main.BrowserWindow = null;
-	static function showSplashWindow() {
-		#if debug
-
-			createMainWindow();
-
-		#else
-
-			splash = new electron.main.BrowserWindow({
-				width: 300,
-				height: 300,
-				alwaysOnTop: true,
-				transparent: true,
-				frame: false,
-			});
-
-			var ver = new dn.Version( MacroTools.getAppVersion() );
-
-			splash
-				.loadFile(APP_RESOURCE_DIR + 'splash.html', { query:{
-					mainVersion : ver.major+"."+ver.minor,
-					patchVersion : ver.patch>0 ? "."+ver.patch : "",
-				}})
-				.then(
-					_->createMainWindow(),
-					_->fileNotFound("splash.html")
-				);
-
-		#end
-
+	function showSplashWindow() {
+		createMainWindow();
 	}
 
-	static function createMainWindow() {
+	function createMainWindow() {
 		// Init window
 		mainWindow = new electron.main.BrowserWindow({
 			webPreferences: { nodeIntegration:true, contextIsolation:false },
 			fullscreenable: true,
 			show: false,
 			title: "LDtk",
-			// icon: __dirname+"/appIcon.png",
+			icon: Const.APP_RESOURCE_DIR+"appIcon.png",
 		});
 		mainWindow.once("ready-to-show", ev->{
 			mainWindow.webContents.setZoomFactor( settings.getAppZoomFactor() );
@@ -132,11 +110,11 @@ class ElectronMain {
 		#end
 
 		// Load app page
-		var p = mainWindow.loadFile(APP_RESOURCE_DIR + 'app.html', {});
+		var p = mainWindow.loadFile(Const.APP_RESOURCE_DIR + 'app.html', {});
 		#if debug
 			// Show immediately
 			mainWindow.maximize();
-			p.then( (_)->{}, (_)->fileNotFound(APP_RESOURCE_DIR + "app.html") );
+			p.then( (_)->{}, (_)->fileNotFound(Const.APP_RESOURCE_DIR + "app.html") );
 		#else
 			// Wait for loading before showing up
 			p.then( (_)->{
@@ -146,13 +124,15 @@ class ElectronMain {
 			}, (e)->{
 				electron.main.Dialog.showErrorBox("error:", '"$e"');
 				splash.destroy();
-				fileNotFound(APP_RESOURCE_DIR + "app.html");
+				fileNotFound(Const.APP_RESOURCE_DIR + "app.html");
 			});
 		#end
 
 		// Destroy
 		mainWindow.on('closed', function() {
 			mainWindow = null;
+			if (eventsSender != null)
+				eventsSender('closed');
 		});
 
 		// Misc bindings

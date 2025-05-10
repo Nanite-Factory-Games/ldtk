@@ -1,9 +1,7 @@
 import js.Syntax;
 
 class Page extends dn.Process {
-	
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep + 'assets' + require('path').sep");
-	
+		
 	var jPage(get,never) : js.jquery.JQuery; inline function get_jPage() return App.ME.jPage;
 	var settings(get,never) : Settings; inline function get_settings() return App.ME.settings;
 
@@ -31,11 +29,11 @@ class Page extends dn.Process {
 	public function onAppCommand(cmd:AppCommand) {}
 
 	public function loadPageTemplate(id:String, ?vars:Dynamic) {
-		var path = APP_RESOURCE_DIR + 'tpl/pages/$id.html';
+		var path = Const.APP_RESOURCE_DIR + 'tpl/pages/$id.html';
 		App.LOG.fileOp("Loading page template: "+id+" from "+path);
 		var raw = NT.readFileString(path);
 		if( raw==null )
-			throw "Page not found: "+id+" in "+path+"( cwd="+ET.getAppResourceDir()+")";
+			throw "Page not found: "+id+" in "+path+"( cwd="+Const.APP_RESOURCE_DIR+")";
 
 		if( vars!=null ) {
 			for(k in Reflect.fields(vars))

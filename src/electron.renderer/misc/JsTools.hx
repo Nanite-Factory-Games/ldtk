@@ -12,8 +12,6 @@ typedef InternalSortableOptions = {
 
 class JsTools {
 
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require.resolve('@nanite-factory-games/ldtk/package.json')) + require('path').sep + 'assets' + require('path').sep");
-
 	/**
 		Use SortableJS to make some list sortable
 		See: https://github.com/SortableJS/Sortable
@@ -520,8 +518,8 @@ class JsTools {
 		if( !useCache || !_fileCache.exists(name) ) {
 			if( _fileCache.exists(name) )
 				_fileCache.remove(name);
-			App.LOG.fileOp("Loading HTML template "+name+"from "+APP_RESOURCE_DIR);
-			var path = dn.FilePath.fromFile(APP_RESOURCE_DIR + "tpl/" + name);
+			App.LOG.fileOp("Loading HTML template "+name+"from "+ Const.APP_RESOURCE_DIR);
+			var path = dn.FilePath.fromFile(Const.APP_RESOURCE_DIR + "tpl/" + name);
 			path.extension = "html";
 
 			if( !NT.fileExists(path.full) )
@@ -1006,7 +1004,7 @@ class JsTools {
 
 	public static function getLogPath() {
 		#if debug
-		return dn.FilePath.fromDir( ET.getAppResourceDir()+"/ldtk.log" ).useSlashes().full;
+		return dn.FilePath.fromDir( Const.APP_RESOURCE_DIR+"/ldtk.log" ).useSlashes().full;
 		#else
 		return dn.FilePath.fromDir( ET.getLogDir()+"/ldtk.log" ).useSlashes().full;
 		#end
@@ -1014,17 +1012,13 @@ class JsTools {
 
 	/** Path to LDtk exe **/
 	public static function getExeDir() {
-		#if debug
-		var path = ET.getAppResourceDir()+"/foo.exe";
-		#else
-		var path = ET.getExeDir();
-		#end
+		var path = Const.APP_RESOURCE_DIR+"/foo.exe";
 		return dn.FilePath.fromFile( path ).useSlashes().directory;
 	}
 
 	/** Return path to the embed "assets" dir **/
 	public static function getAssetsDir() {
-		return dn.FilePath.fromDir( ET.getAppResourceDir()+"/assets" ).useSlashes().directory;
+		return dn.FilePath.fromDir( Const.APP_RESOURCE_DIR ).useSlashes().directory;
 	}
 
 	/** Return path to the "extraFiles" dir, stored as-is in the LDtk install dir **/

@@ -8,11 +8,9 @@ import page.CrashReport; // force compilation in debug
 class App extends dn.Process {
 	public static var ME : App;
 	public static var LOG : dn.Log = new dn.Log(5000);
-
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep");
 	
 	public static var APP_ASSETS_DIR(get,never) : String;
-	static inline function get_APP_ASSETS_DIR() return APP_RESOURCE_DIR;
+	static inline function get_APP_ASSETS_DIR() return Const.APP_RESOURCE_DIR;
 
 	public var jDoc(get,never) : J; inline function get_jDoc() return new J(js.Browser.document);
 	public var jBody(get,never) : J; inline function get_jBody() return new J("body");
@@ -39,7 +37,7 @@ class App extends dn.Process {
 	public var keyBindings : Array<KeyBinding> = [];
 	var debugFlags : Map<DebugFlag,Bool> = new Map();
 
-	public function new(?project_path:String) {
+	public function new() {
 		super();
 
 		// Init logging
@@ -134,9 +132,8 @@ class App extends dn.Process {
 		Boot.ME.s2d.addEventListener(onHeapsEvent);
 
 		// Init dirs
-		var fp = dn.FilePath.fromDir( ET.getAppResourceDir() );
+		var fp = dn.FilePath.fromDir( Const.APP_RESOURCE_DIR );
 		fp.useSlashes();
-		APP_RESOURCE_DIR = fp.directoryWithSlash;
 
 		// Restore settings
 		loadSettings();
@@ -148,33 +145,9 @@ class App extends dn.Process {
 
 		// Start
 		delayer.addS( ()->{
-			var path = null;
-			// Look for path and level index in args
-			if (project_path!=null) {
-				path = dn.FilePath.fromFile(project_path);
-				if( path!=null && !path.isEmpty() && !path.isAbsolute() ) {
-					path = dn.FilePath.fromFile(Sys.getCwd() + path.slash() + path.full);
-					LOG.add("BOOT", "Fixed path argument: "+path.full);
-				}
-			}
-
-			var levelIndex : Null<Int> = null;
-			if( path!=null && path.extension==Const.LEVEL_EXTENSION ) {
-				var indexReg = ~/0*([0-9]+)-.*/gi;
-				if( indexReg.match(path.fileName) )
-					levelIndex = Std.parseInt( indexReg.matched(1) );
-				var dir = path.getLastDirectory();
-				path.removeLastDirectory();
-				path.fileWithExt = dir+"."+Const.FILE_EXTENSION;
-			}
-			LOG.add("BOOT", 'Start args: path=$path levelIndex=$levelIndex');
 
 			// Load page
-			if( path!=null ) {
-				LOG.add("BOOT", 'Loading project from args (${path.full})...');
-				loadProject(path.full, levelIndex);
-			}
-			else if( settings.v.openLastProject && settings.v.lastProject!=null && NT.fileExists(settings.v.lastProject.filePath) ) {
+			if( settings.v.openLastProject && settings.v.lastProject!=null && NT.fileExists(settings.v.lastProject.filePath) ) {
 				var path = settings.v.lastProject.filePath;
 				LOG.add("BOOT", 'Re-opening last project ($path)...');
 				loadProject(path);
@@ -704,7 +677,10 @@ class App extends dn.Process {
 
 		
 		// Load
-		settings = new Settings(null);
+		var raw_settings = IpcRenderer.sendSync("getSettings");
+		LOG.general("Settings loaded: "+raw_settings);
+		settings = new Settings(raw_settings);
+		
 		if( settings.v.lastKnownVersion==null )
 			LOG.warning("  -> New settings");
 
@@ -931,7 +907,7 @@ class App extends dn.Process {
 
 	public function getDefaultDialogDir() {
 		if( settings.v.recentProjects.length==0 )
-			return #if debug ET.getAppResourceDir() #else JsTools.getExeDir() #end;
+			return Const.APP_RESOURCE_DIR;
 
 		var last = settings.v.recentProjects[settings.v.recentProjects.length-1];
 		return dn.FilePath.fromFile(last).directory;

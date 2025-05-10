@@ -51,7 +51,7 @@ class EntityDef {
 	public function new(p:Project, uid:Int) {
 		_project = p;
 		this.uid = uid;
-		color = Const.suggestNiceColor( _project.defs.entities.map(ed->ed.color) );
+		color = Const.suggestNiceColor( _project.defs.entities.map(ed->ed.color), App.ME.settings.v.colorBlind );
 		tileOpacity = 1;
 		fillOpacity = 1;
 		lineOpacity = 1;

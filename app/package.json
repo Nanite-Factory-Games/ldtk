@@ -5,6 +5,7 @@
 	"productName": "LDtk",
 	"author": "Sebastien Benard",
 	"description": "2D level editor",
+	"types": "assets/main.d.ts",
 	"scripts": {
 		"start": "electron .",
 		"compile": "cd ..  &&  haxe main.hxml  &&  haxe renderer.hxml",
@@ -32,11 +33,10 @@
 	"dependencies": {
 		"codemirror": "^6.0.1",
 		"simple-color-picker": "^1.0.5",
-		"sortablejs": "^1.15.0",
-		"find-up": "^7.0.0"
+		"sortablejs": "^1.15.0"
 	},
 	"devDependencies": {
-		"electron": "36.1.0",
+		"electron": "36.2.0",
 		"electron-builder": "26.0.15"
 	}
 }

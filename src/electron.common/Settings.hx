@@ -76,90 +76,78 @@ class Settings {
 	public var v : AppSettings;
 	var ls : dn.data.LocalStorage;
 
-	public static var APP_RESOURCE_DIR = Syntax.code("require('path').dirname(require('find-up').findUpSync('package.json', {cwd:__dirname})) + require('path').sep");
-
-
 	// new with optional settings
 	public function new(?in_settings:AppSettings) {
+		// Init defaults
+		defaults = {
+			lastKnownVersion: Const.getAppVersionStr(),
+			recentProjects: [],
+			recentDirs: null,
+			recentDirColors: [],
+
+			zenMode: false,
+			grid: true,
+
+			emptySpaceSelection: true,
+			tileStacking: true,
+			tileEnumOverlays : false,
+			showDetails: true,
+			useBestGPU: true,
+			startFullScreen: false,
+			autoInstallUpdates: true,
+			colorBlind: false,
+			blurMask: true,
+			navigationKeys: null,
+
+			singleLayerMode: false,
+			singleLayerModeIntensity: 0.75,
+
+			openLastProject: false,
+			lastProject: null,
+
+			autoWorldModeSwitch: ZoomInAndOut,
+			fieldsRender: FR_Outline,
+			nearbyTilesRenderingDist: 1,
+			appUiScale: 1.0,
+			editorUiScale: 1.0,
+			mouseWheelSpeed: 1.0,
+
+			uiStates: [],
+			lastUiDirs: [],
+			projectTrusts: [],
+		};
+
+		// Set v to default combined with in_settings
+		var result:Dynamic = {};
+
+		for (field in Reflect.fields(defaults)) {
+			Reflect.setField(result, field, Reflect.field(defaults, field));
+		}
 		if (in_settings != null) {
-			v = in_settings;
-			return;
-		} else {
-			// Init storage
-			ls = dn.data.LocalStorage.getJsonStorage("settings", Compact);
-			ls.setStorageFileDir( getDir() );
-
-			// Init defaults
-			defaults = {
-				lastKnownVersion: null,
-				recentProjects: [],
-				recentDirs: null,
-				recentDirColors: [],
-
-				zenMode: false,
-				grid: true,
-
-				emptySpaceSelection: true,
-				tileStacking: true,
-				tileEnumOverlays : false,
-				showDetails: true,
-				useBestGPU: true,
-				startFullScreen: false,
-				autoInstallUpdates: true,
-				colorBlind: false,
-				blurMask: true,
-				navigationKeys: null,
-
-				singleLayerMode: false,
-				singleLayerModeIntensity: 0.75,
-
-				openLastProject: false,
-				lastProject: null,
-
-				autoWorldModeSwitch: ZoomInAndOut,
-				fieldsRender: FR_Outline,
-				nearbyTilesRenderingDist: 1,
-				appUiScale: 1.0,
-				editorUiScale: 1.0,
-				mouseWheelSpeed: 1.0,
-
-				uiStates: [],
-				lastUiDirs: [],
-				projectTrusts: [],
-			}
-
-			// Load
-			v = ls.readObject(defaults, (obj)->{
-				#if editor
-				// Migrate old NavKeys string value
-				if( obj.navKeys!=null ) {
-					var e = try NavigationKeys.createByName( obj.navKeys ) catch(_) null;
-					if( e!=null )
-						obj.navigationKeys = e;
+			for (field in Reflect.fields(in_settings)) {
+				var value = Reflect.field(in_settings, field);
+				if (value != null) {
+					Reflect.setField(result, field, value);
 				}
-				#end
-			});
-
-			// Try to guess Navigation keys
-			#if editor
-
-			if( v.navigationKeys==null ) {
-				for(full in js.Browser.navigator.languages) {
-					switch full {
-						case "nl-be": v.navigationKeys = Zqsd; break;
-					}
-
-					var short = ( full.indexOf("-")<0 ? full : full.substr(0,full.indexOf("-")) ).toLowerCase();
-					switch short {
-						case "fr": v.navigationKeys = Zqsd; break;
-						case "en": v.navigationKeys = Wasd; break;
-						case _:
-					}
-				}
-				if( v.navigationKeys==null )
-					v.navigationKeys = Wasd;
 			}
-			#end
+		}
+		v = result;
+
+		if( v.navigationKeys==null ) {
+			for(full in js.Browser.navigator.languages) {
+				switch full {
+					case "nl-be": v.navigationKeys = Zqsd; break;
+				}
+
+				var short = ( full.indexOf("-")<0 ? full : full.substr(0,full.indexOf("-")) ).toLowerCase();
+				switch short {
+					case "fr": v.navigationKeys = Zqsd; break;
+					case "en": v.navigationKeys = Wasd; break;
+					case _:
+				}
+			}
+			if( v.navigationKeys==null )
+				v.navigationKeys = Wasd;
 		}
 
 		initDefaultGlobalUiState(ShowProjectColors, 1);
@@ -339,7 +327,7 @@ class Settings {
 
 	public static function getDir() {
 		var path = isRenderer()
-			?	#if debug	APP_RESOURCE_DIR
+			?	#if debug	Const.APP_RESOURCE_DIR
 				#else		dn.js.ElectronTools.getUserDataDir() #end
 			:	#if debug	electron.main.App.getAppPath();
 				#else		electron.main.App.getPath("userData"); #end
@@ -351,6 +339,6 @@ class Settings {
 	}
 
 	public function save() {
-		ls.writeObject(v);
+		// ls.writeObject(v);
 	}
 }

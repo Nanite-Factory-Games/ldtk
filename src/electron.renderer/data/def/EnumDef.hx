@@ -144,7 +144,7 @@ class EnumDef {
 		var ev : data.DataTypes.EnumDefValue = {
 			id: v,
 			tileRect: null,
-			color: Const.suggestNiceColor( values.map(ev->ev.color) ),
+			color: Const.suggestNiceColor( values.map(ev->ev.color), App.ME.settings.v.colorBlind),
 		};
 		values.push(ev);
 		return ev;
